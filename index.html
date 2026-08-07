@@ -1,0 +1,369 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nuestro Universo 3D de Amor</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body, html {
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            background-color: #030111;
+            font-family: 'Segoe UI', Roboto, sans-serif;
+            user-select: none;
+        }
+        canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+            cursor: grab;
+        }
+        canvas:active { cursor: grabbing; }
+
+        /* Interfaz flotante del contador */
+        .interfaz-3d {
+            position: absolute;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 10;
+            text-align: center;
+            width: 90%;
+            max-width: 500px;
+            pointer-events: none;
+        }
+
+        .contenedor-letrero {
+            background: rgba(12, 5, 36, 0.7);
+            padding: 15px 25px;
+            border-radius: 50px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 51, 119, 0.3);
+            box-shadow: 0 10px 30px rgba(255, 20, 147, 0.2);
+        }
+
+        .contador-tiempo {
+            color: #fff;
+            font-size: 1.2rem;
+            font-weight: bold;
+            background: linear-gradient(45deg, #ff1493, #9400d3);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-shadow: 0 0 10px rgba(255, 20, 147, 0.2);
+        }
+
+        .instruccion {
+            position: absolute;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            color: rgba(255, 255, 255, 0.4);
+            font-size: 0.85rem;
+            z-index: 5;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+        }
+
+        .musica-control {
+            position: absolute;
+            bottom: 20px;
+            left: 20px;
+            z-index: 100;
+            background: rgba(255, 255, 255, 0.1);
+            padding: 5px;
+            border-radius: 20px;
+            backdrop-filter: blur(5px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        audio { height: 30px; opacity: 0.7; }
+    </style>
+</head>
+<body>
+
+    <div class="instruccion">Arrastra el espacio para explorar en 360° ✨</div>
+
+    <div class="interfaz-3d">
+        <div class="contenedor-letrero">
+            <div id="contador" class="contador-tiempo">Calculando nuestra eternidad...</div>
+        </div>
+    </div>
+
+    <!-- Reproductor de música de fondo sutil -->
+    <div class="musica-control">
+        <audio src="cancion.mp3" autoplay loop controls></audio>
+    </div>
+
+    <canvas id="universo3d"></canvas>
+    <script>
+        const canvas = document.getElementById('universo3d');
+        const ctx = canvas.getContext('2d');
+
+        let ancho = canvas.width = window.innerWidth;
+        let alto = canvas.height = window.innerHeight;
+
+        // CONTADOR AUTOMÁTICO DESDE TU ANIVERSARIO (25 DE ENERO 2025)
+        const fechaInicio = new Date(2025, 0, 25);
+        function actualizarContador() {
+            const ahora = new Date();
+            const diferencia = ahora - fechaInicio;
+            const dias = Math.floor(diferencia / (1000 * 60 * 60 * 24));
+            document.getElementById('contador').innerHTML = `Llevamos ${dias} días orbitando juntos ❤️`;
+        }
+        actualizarContador();
+        setInterval(actualizarContador, 60000);
+
+        // CONFIGURACIÓN DE ÓRBITAS INTERACTIVAS 360°
+        let rotacionX = 0.2;
+        let rotacionY = 0.5;
+        let arrastrando = false;
+        let previoMouseX, previoMouseY;
+
+        window.addEventListener('click', () => {
+            const reproductor = document.querySelector('audio');
+            if(reproductor) reproductor.play().catch(() => {});
+        });
+
+        window.addEventListener('mousedown', (e) => {
+            arrastrando = true;
+            previoMouseX = e.clientX;
+            previoMouseY = e.clientY;
+        });
+
+        window.addEventListener('mousemove', (e) => {
+            if (!arrastrando) return;
+            let deltaX = e.clientX - previoMouseX;
+            let deltaY = e.clientY - previoMouseY;
+            rotacionY += deltaX * 0.005;
+            rotacionX += deltaY * 0.005;
+            previoMouseX = e.clientX;
+            previoMouseY = e.clientY;
+        });
+
+        window.addEventListener('mouseup', () => arrastrando = false);
+        window.addEventListener('touchstart', (e) => {
+            arrastrando = true;
+            previoMouseX = e.touches.clientX;
+            previoMouseY = e.touches.clientY;
+        });
+
+        window.addEventListener('touchmove', (e) => {
+            if (!arrastrando) return;
+            let deltaX = e.touches.clientX - previoMouseX;
+            let deltaY = e.touches.clientY - previoMouseY;
+            rotacionY += deltaX * 0.007;
+            rotacionX += deltaY * 0.007;
+            previoMouseX = e.touches.clientX;
+            previoMouseY = e.touches.clientY;
+        });
+
+        window.addEventListener('touchend', () => arrastrando = false);
+        window.addEventListener('resize', () => {
+            ancho = canvas.width = window.innerWidth;
+            alto = canvas.height = window.innerHeight;
+        });
+
+        // Configuración de tus imágenes subidas a GitHub
+        const rutasFotos = ['foto1.jpeg', 'foto 2.jpeg', 'foto1.jpeg', 'foto 2.jpeg'];
+        const respaldosDemo = [
+            'https://picsum.photos',
+            'https://picsum.photos',
+            'https://picsum.photos',
+            'https://picsum.photos'
+        ];
+        
+        let objetosImagenes = [];
+        rutasFotos.forEach((ruta, i) => {
+            let img = new Image();
+            img.src = ruta;
+            img.onerror = () => { img.src = respaldosDemo[i]; };
+            objetosImagenes.push(img);
+        });
+
+        // TUS FRASES PERSONALIZADAS QUE VUELAN AL REDEDOR
+        const palabrasEspacio = [
+            "Eres el amor de mi vida 💕", "Eres mi niña preshiosa 👑", "Siempre juntos 💖",
+            "Te amo infinitamente ♾️", "Mi lugar seguro 🌹", "Contigo todo es perfecto 🥰",
+            "Eres mi universo entero ✨", "Mi estrella favorita 🌌", "Te elijo hoy y siempre ❤️"
+        ];
+
+        const numEstrellas = 300;
+        let astros3D = [];
+
+        function crearUniverso() {
+            astros3D = [];
+            
+            // 1. Agregar polvo estelar
+            for (let i = 0; i < numEstrellas; i++) {
+                let angulo = Math.random() * Math.PI * 2;
+                let radio = Math.random() * 400 + 60;
+                astros3D.push({
+                    x: Math.cos(angulo) * radio,
+                    y: (Math.random() - 0.5) * 200,
+                    z: Math.sin(angulo) * radio,
+                    tipo: 'estrella',
+                    color: `hsl(${Math.random() * 50 + 320}, 100%, 80%)`,
+                    tamano: Math.random() * 1.5 + 0.8
+                });
+            }
+
+            // 2. Agregar tus palabras románticas en órbitas flotantes
+            palabrasEspacio.forEach((frase, i) => {
+                let anguloFrase = (i / palabrasEspacio.length) * Math.PI * 2;
+                let radioFrase = Math.random() * 80 + 260;
+                astros3D.push({
+                    x: Math.cos(anguloFrase) * radioFrase,
+                    y: (Math.random() - 0.5) * 160,
+                    z: Math.sin(anguloFrase) * radioFrase,
+                    tipo: 'texto',
+                    contenido: frase,
+                    color: `hsl(${Math.random() * 40 + 330}, 100%, 85%)`
+                });
+            });
+
+            // 3. Insertar tus fotos orbitando
+            for (let i = 0; i < 4; i++) {
+                let anguloOrbita = (i / 4) * Math.PI * 2;
+                astros3D.push({
+                    x: Math.cos(anguloOrbita) * 180,
+                    y: (i % 2 === 0 ? 40 : -40),
+                    z: Math.sin(anguloOrbita) * 180,
+                    tipo: 'foto',
+                    imgElemento: objetosImagenes[i],
+                    anguloPropio: Math.random() * 5
+                });
+            }
+        }
+        // DIBUJAR CORAZÓN FIJO CENTRAL CON TEXTO "Amor de mi vida"
+        function dibujarCorazonCentral() {
+            ctx.save();
+            ctx.translate(ancho / 2, alto / 2 - 30);
+            
+            // Latido animado suave del corazón central
+            let latido = 1 + Math.sin(Date.now() * 0.003) * 0.05;
+            ctx.scale(latido, latido);
+
+            ctx.beginPath();
+            ctx.moveTo(0, -20);
+            ctx.bezierCurveTo(15, -45, 50, -35, 50, 0);
+            ctx.bezierCurveTo(50, 30, 20, 55, 0, 85);
+            ctx.bezierCurveTo(-20, 55, -50, 30, -50, 0);
+            ctx.bezierCurveTo(-50, -35, -15, -45, 0, -20);
+            ctx.closePath();
+            
+            ctx.fillStyle = '#ff1493';
+            ctx.shadowBlur = 35;
+            ctx.shadowColor = '#ff69b4';
+            ctx.fill();
+            
+            // Texto fijo dentro del corazón
+            ctx.shadowBlur = 0;
+            ctx.font = "bold 11px 'Segoe UI', Roboto, sans-serif";
+            ctx.fillStyle = "#ffffff";
+            ctx.textAlign = "center";
+            ctx.fillText("Amor de", 0, 5);
+            ctx.fillText("mi vida", 0, 18);
+            
+            ctx.restore();
+        }
+
+        // MOTOR DE PROYECTCCIÓN 3D EN TIEMPO REAL
+        function renderizar360() {
+            ctx.fillStyle = 'rgba(3, 1, 17, 0.25)'; 
+            ctx.fillRect(0, 0, ancho, alto);
+
+            let cosX = Math.cos(rotacionX);
+            let sinX = Math.sin(rotacionX);
+            let cosY = Math.cos(rotacionY);
+            let sinY = Math.sin(rotacionY);
+
+            if (!arrastrando) {
+                rotacionY += 0.0012;
+            }
+
+            let elementosProyectados = astros3D.map(astro => {
+                let x1 = astro.x * cosY - astro.z * sinY;
+                let z1 = astro.z * cosY + astro.x * sinY;
+                let y2 = astro.y * cosX - z1 * sinX;
+                let z2 = z1 * cosX + astro.y * sinX;
+
+                let distanciaPerspectiva = 400;
+                let escalaPersp = distanciaPerspectiva / (distanciaPerspectiva + z2);
+                let xProyectado = x1 * escalaPersp + ancho / 2;
+                let yProyectado = y2 * escalaPersp + alto / 2;
+
+                return { astro, x: xProyectado, y: yProyectado, zDepth: z2, escala: escalaPersp };
+            });
+
+            elementosProyectados.sort((a, b) => b.zDepth - a.zDepth);
+
+            elementosProyectados.forEach(item => {
+                if (item.escala < 0) return;
+
+                if (item.astro.tipo === 'estrella') {
+                    ctx.beginPath();
+                    let r = item.astro.tamano * item.escala * 1.3;
+                    ctx.arc(item.x, item.y, Math.max(0.2, r), 0, Math.PI * 2);
+                    ctx.fillStyle = item.astro.color;
+                    ctx.shadowBlur = r * 3;
+                    ctx.shadowColor = item.astro.color;
+                    ctx.fill();
+                    ctx.shadowBlur = 0;
+
+                } else if (item.astro.tipo === 'texto') {
+                    let tamFuente = Math.max(10, 16 * item.escala);
+                    ctx.save();
+                    ctx.font = `bold ${tamFuente}px 'Segoe UI', Roboto, sans-serif`;
+                    ctx.fillStyle = item.astro.color;
+                    ctx.textAlign = "center";
+                    ctx.shadowBlur = 10 * item.escala;
+                    ctx.shadowColor = "#ff3377";
+                    ctx.fillText(item.astro.contenido, item.x, item.y);
+                    ctx.restore();
+
+                } else if (item.astro.tipo === 'foto') {
+                    let tamFoto = 70 * item.escala;
+                    if (tamFoto > 15) {
+                        ctx.save();
+                        ctx.translate(item.x, item.y);
+                        ctx.rotate(Math.sin(Date.now() * 0.0008 + item.astro.anguloPropio) * 0.08);
+                        
+                        ctx.lineWidth = 3;
+                        ctx.strokeStyle = '#ffffff';
+                        ctx.fillStyle = '#0c0524';
+                        ctx.shadowBlur = 15;
+                        ctx.shadowColor = '#ff1493';
+                        
+                        ctx.beginPath();
+                        ctx.rect(-tamFoto/2, -tamFoto/2, tamFoto, tamFoto);
+                        ctx.fill();
+                        ctx.stroke();
+                        ctx.shadowBlur = 0;
+
+                        try {
+                            ctx.drawImage(item.astro.imgElemento, -tamFoto/2 + 2, -tamFoto/2 + 2, tamFoto - 4, tamFoto - 4);
+                        } catch(e) {}
+                        ctx.restore();
+                    }
+                }
+            });
+
+            // Dibujar el corazón neón encima de los astros lejanos
+            dibujarCorazonCentral();
+
+            requestAnimationFrame(renderizar360);
+        }
+
+        crearUniverso();
+        renderizar360();
+    </script>
+</body>
+</html>
